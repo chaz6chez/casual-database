@@ -1,0 +1,30 @@
+{
+  "name": "chaz6chez/casual-database",
+  "type": "library",
+  "keywords": [
+    "casual",
+    "database"
+  ],
+  "license": "MIT",
+  "description": "一个漫不经心的适合常驻内存PHP程序的数据库驱动组件.",
+  "authors": [
+    {
+      "name": "chaz6chez",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "250220719@qq.com",
+    "issues": "https://github.com/chaz6chez/casual-database/issues",
+    "source": "https://github.com/chaz6chez/casual-database"
+  },
+  "require": {
+    "php": ">=7.2",
+    "catfan/medoo": "~1.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "CasualDatabase\\": "src/"
+    }
+  }
+}
