@@ -1,5 +1,5 @@
 {
-  "name": "chaz6chez/casual-database",
+  "name": "casual/database",
   "type": "library",
   "keywords": [
     "casual",
@@ -19,7 +19,8 @@
     "source": "https://github.com/chaz6chez/casual-database"
   },
   "require": {
-    "php": ">=7.2",
+    "php": ">=7.3",
+    "ext-pdo": "*",
     "catfan/medoo": "~1.7"
   },
   "autoload": {

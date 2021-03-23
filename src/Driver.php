@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace CasualDatabase;
 
-use http\Exception\InvalidArgumentException;
 use Medoo\Medoo;
 
 class Driver extends Medoo {
@@ -22,7 +21,7 @@ class Driver extends Medoo {
         parent::__construct($this->options);
     }
 
-    public function execute($query, $map = [])
+    public function execute($query, ?array $map = []) : bool
     {
         $this->reconnect();
         $statement = @$this->pdo->prepare($query);
@@ -81,8 +80,9 @@ class Driver extends Medoo {
                 $this->rollback();
             }
             return false;
+        } finally {
+            return $this->statement;
         }
-        return $this->statement;
     }
 
     public function command()
@@ -109,21 +109,21 @@ class Driver extends Medoo {
         unset($this->pdo);
     }
 
-    protected function tableQuote($table)
+    protected function tableQuote($table) : string
     {
         if (!preg_match('/^[a-zA-Z0-9_]+$/i', $table))
         {
-            throw new InvalidArgumentException("Incorrect table name \"$table\"");
+            throw new \InvalidArgumentException("Incorrect table name \"$table\"");
         }
 
         return '`' . $this->prefix . $table . '`';
     }
 
-    protected function columnQuote($string)
+    protected function columnQuote($string) : string
     {
         if (!preg_match('/^[a-zA-Z0-9_]+(\.?[a-zA-Z0-9_]+)?$/i', $string))
         {
-            throw new InvalidArgumentException("Incorrect column name \"$string\"");
+            throw new \InvalidArgumentException("Incorrect column name \"$string\"");
         }
 
         if (strpos($string, '.') !== false)
