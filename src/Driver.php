@@ -134,9 +134,10 @@ class Driver extends Medoo {
         return '`' . $string . '`';
     }
 
-    public function hasTable($table)
+    public function hasTable($table, bool $like = true)
     {
-        $query = $this->exec("SHOW TABLES LIKE '{$this->prefix}{$table}'");
+        $sql = $like ? 'SHOW TABLES LIKE' : 'SHOW TABLES';
+        $query = $this->exec("{$sql} '{$this->prefix}{$table}'");
         if (!$query) {
             return false;
         }

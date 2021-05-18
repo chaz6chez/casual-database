@@ -19,7 +19,7 @@
     "source": "https://github.com/chaz6chez/casual-database"
   },
   "require": {
-    "php": ">=7.3",
+    "php": ">=7.2",
     "ext-pdo": "*",
     "catfan/medoo": "~1.7"
   },
