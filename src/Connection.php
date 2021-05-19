@@ -124,15 +124,6 @@ class Connection {
     }
 
     /**
-     * @param bool $single
-     * @return $this
-     */
-    public function single(bool $single = true) : Connection{
-        $this->_single = $single;
-        return $this;
-    }
-
-    /**
      * @param $field
      * @return Connection
      */
