@@ -172,15 +172,16 @@ class Connection {
     }
 
     /**
-     * @param $offset
+     * @param string|int $offset
      * @param null|int $limit
      * @return Connection
      */
     public function limit($offset, $limit = null) : Connection {
+        $offset = (string)$offset;
         if (strpos($offset, ',')) {
             $rel = explode(',', $offset);
-            $offset = $rel[0];
-            $limit = $rel[1];
+            $offset = (int)$rel[0];
+            $limit = (int)$rel[1];
         }
         if (is_null($limit)) {
             $limit = $offset;

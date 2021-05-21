@@ -111,6 +111,10 @@ class Driver extends Medoo {
 
     protected function tableQuote($table) : string
     {
+        if ($table === null)
+        {
+            throw new \InvalidArgumentException("Incorrect table name \"null\"");
+        }
         if (!preg_match('/^[a-zA-Z0-9_]+$/i', $table))
         {
             throw new \InvalidArgumentException("Incorrect table name \"$table\"");
@@ -121,6 +125,10 @@ class Driver extends Medoo {
 
     protected function columnQuote($string) : string
     {
+        if ($string === null)
+        {
+            throw new \InvalidArgumentException("Incorrect column name \"null\"");
+        }
         if (!preg_match('/^[a-zA-Z0-9_]+(\.?[a-zA-Z0-9_]+)?$/i', $string))
         {
             throw new \InvalidArgumentException("Incorrect column name \"$string\"");
