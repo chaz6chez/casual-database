@@ -1,5 +1,5 @@
-# casual-database 
-一个漫不经心的数据库
+# casual-database
+**Casual Long-living MySQL connection for daemon.**
 ## 说明
 - 基于Medoo1.7的修改版
 - 符合常驻进程应用的长连接
