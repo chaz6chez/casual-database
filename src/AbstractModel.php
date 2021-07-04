@@ -41,10 +41,12 @@ abstract class AbstractModel {
     /**
      * 设置日志
      * @param LoggerInterface $logger
+     * @return $this
      */
-    public function setLogger(LoggerInterface $logger) : void
+    public function setLogger(LoggerInterface $logger) : AbstractModel
     {
         $this->_logger = $logger;
+        return $this;
     }
 
     /**
