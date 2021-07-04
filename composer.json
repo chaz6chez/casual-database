@@ -21,7 +21,8 @@
   "require": {
     "php": ">=7.2",
     "ext-pdo": "*",
-    "catfan/medoo": "~1.7"
+    "catfan/medoo": "~1.7",
+    "psr/log": "^1.0"
   },
   "autoload": {
     "psr-4": {

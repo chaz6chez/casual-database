@@ -8,6 +8,8 @@ declare(strict_types=1);
 
 namespace Database;
 
+use Psr\Log\LoggerInterface;
+
 class Connection {
 
     /**
@@ -30,9 +32,11 @@ class Connection {
     protected $_limit;
     protected $_group;
     protected $_cache = false;
+    protected $_logger;
 
-    public function __invoke(array $config) : Connection
+    public function __invoke(array $config, ?LoggerInterface $logger = null) : Connection
     {
+        $this->_logger = $logger;
         $this->_config = $config;
         return $this;
     }
@@ -46,7 +50,7 @@ class Connection {
         if(!$this->_driver instanceof Driver){
             if($this->_config){
                 try{
-                    $this->_driver = new Driver($this->_config);
+                    $this->_driver = new Driver($this->_config, $this->_logger);
                     $this->_error = null;
                 }catch (\PDOException $e){
                     $this->_error = "db server exception : {$e->getMessage()}";
@@ -79,7 +83,8 @@ class Connection {
      * 获得驱动
      * @return Driver
      */
-    public function driver() : Driver{
+    public function driver() : Driver
+    {
         return $this->_driver;
     }
 
@@ -486,11 +491,12 @@ class Connection {
 
     /**
      * 开启事务
+     * @param int|null $timeout
      * @return bool
      */
-    public function beginTransaction() :bool{
+    public function beginTransaction(?int $timeout = null) :bool{
         if($this->isActivated()){
-            return $this->driver()->beginTransaction();
+            return $this->driver()->beginTransaction($timeout === null ? $timeout : time() + $timeout);
         }
         return false;
     }
@@ -529,7 +535,6 @@ class Connection {
         $this->_limit      = null;
         $this->_group      = null;
         $this->_cache      = true;
-        $this->_single     = false;
         $this->_error      = $this->driver()->error();
     }
 
