@@ -28,5 +28,10 @@
     "psr-4": {
       "Database\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Database\\Test\\": "test/"
+    }
   }
 }

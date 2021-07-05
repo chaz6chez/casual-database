@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Database;
 
+use Database\Exception\ExpireException;
 use Psr\Log\LoggerInterface;
 
 class Connection {
@@ -68,14 +69,16 @@ class Connection {
      * 是否激活
      * @return bool
      */
-    public function isActivated() : bool{
+    public function isActivated() : bool
+    {
         return boolval($this->_error === null and $this->_driver instanceof Driver);
     }
 
     /**
-     * @return string
+     * @return null|mixed
      */
-    public function getError() : string{
+    public function getError()
+    {
         return $this->_error;
     }
 
@@ -535,7 +538,7 @@ class Connection {
         $this->_limit      = null;
         $this->_group      = null;
         $this->_cache      = true;
-        $this->_error      = $this->driver()->error();
+        $this->_error      = null;
     }
 
     public function getParams() : array{

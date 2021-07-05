@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Database;
 
+use Database\Exception\DbnameException;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractModel {
@@ -72,6 +73,9 @@ abstract class AbstractModel {
      */
     public function dbName(bool $master = true) : Connection
     {
+        if(!$this->_dbName){
+            throw new DbnameException('dbName cannot be empty.');
+        }
         if(!$master){
             if (
                 !isset($this->_dbSlave[$this->_dbName]) or
@@ -97,16 +101,26 @@ abstract class AbstractModel {
     }
 
     /**
-     * 获取表名
-     * @param string $name
+     * @param string|null $name
      * @return string
      */
-    public function tb(string $name = '') : string{
-        if ($name === '') {
+    public function table(?string $name = null) : string
+    {
+        if ($name === null) {
             return $this->_table;
         }
         $v = "_table_{$name}";
         return $this->{$v};
+    }
+
+    /**
+     * 获取表名
+     * @param string $name
+     * @return string
+     * @deprecated
+     */
+    public function tb(string $name = '') : string{
+        return $this->table($name === '' ? null : $name);
     }
 
     /**
