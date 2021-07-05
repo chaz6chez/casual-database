@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Database;
 
+use Database\Exception\ExpireException;
+use Database\Exception\TransactionException;
 use Medoo\Medoo;
 use Psr\Log\LoggerInterface;
 
@@ -44,7 +46,7 @@ class Driver extends Medoo {
             if($this->_setInTran()){
                 $this->rollback();
             }
-            throw new ExpireException('Transaction has expired');
+            throw new ExpireException('Transaction has expired.','-303');
         }
         $statement = @$this->pdo->prepare($query);
         if (!$statement) {
@@ -90,7 +92,7 @@ class Driver extends Medoo {
                     if($this->_setInTran()){
                         $this->rollback();
                     }
-                    return $this->_reset(false);
+                    return false;
                 } catch (ExpireException $exception){
                     throw $exception;
                 }
@@ -103,11 +105,11 @@ class Driver extends Medoo {
             if($this->_setInTran()){
                 $this->rollback();
             }
-            return $this->_reset(false);
+            return false;
         } catch (ExpireException $exception){
             throw $exception;
         } finally {
-            return $this->_reset($this->statement);
+            return $this->statement;
         }
     }
 
@@ -185,26 +187,22 @@ class Driver extends Medoo {
     {
         if(!$this->_setInTran()){
             try {
-                $this->setExpireTimestamp($expire);
-                return $this->_beginTransaction();
+                return $this->_beginTransaction($expire);
             } catch (\PDOException $e) {
-                # 服务端主动断开时重连一次
                 if (Helper::isGoneAwayError($e)) {
                     $this->close();
                     try {
-                        return $this->_beginTransaction();
+                        return $this->_beginTransaction($expire);
                     }catch (\PDOException $e) {
                         $this->_error($e);
-                        return $this->_reset(false);
+                        return false;
                     }
                 }
-                # 连接错误
                 if(Helper::isConnectionError($e)){
                     $this->close();
                 }
-
                 $this->_error($e);
-                return $this->_reset(false);
+                return false;
             }
         }
         return true;
@@ -213,25 +211,27 @@ class Driver extends Medoo {
     public function rollback() : bool
     {
         if (!$this->_setInTran()) {
-            $this->_error(new \PDOException('Connection: Db is not in transaction.','-1'));
-            return $this->_reset(false);
+            $this->setExpireTimestamp(0);
+            $this->_error(new TransactionException('Not in transaction.','-404'));
+            return false;
         }
-        return $this->_reset($this->_rollback());
+        return $this->_rollback();
     }
 
     public function commit() : bool
     {
         if (!$this->_setInTran()) {
-            $this->_error(new \PDOException('Connection: Db is not in transaction.', '-1'));
-            return $this->_reset(false);
+            $this->setExpireTimestamp(0);
+            $this->_error(new TransactionException('Not in transaction.','-404'));
+            return false;
         }
-        return $this->_reset($this->_commit());
+        return $this->_commit();
     }
 
     private function _error($exception = null)
     {
         if($this->logger and $exception){
-            $this->logger->error('database error', (array)$exception);
+            $this->logger->error('Database error.', (array)$exception);
         }
         $this->exception = ($exception instanceof \PDOException) ? [
             'message' => $exception->getMessage(),
@@ -249,10 +249,11 @@ class Driver extends Medoo {
         return $this->inTran = $this->pdo->inTransaction();
     }
 
-    private function _beginTransaction() : bool
+    private function _beginTransaction(?int $expire = null) : bool
     {
         $this->reconnect();
         if($res = $this->pdo->beginTransaction()){
+            $this->setExpireTimestamp($expire);
             $this->_setInTran();
         }
         return $res;
@@ -261,11 +262,12 @@ class Driver extends Medoo {
     private function _rollback() : bool
     {
         if(!$this->pdo instanceof \PDO){
-            $this->_error(new \PDOException('Connection: Db not connected.','-2'));
+            $this->_error(new \PDOException('Database is not connected.','-1'));
             $this->_setInTran();
             return false;
         }
         if($res = $this->pdo->rollBack()){
+            $this->setExpireTimestamp(0);
             $this->_setInTran();
         }
         return $res;
@@ -274,19 +276,14 @@ class Driver extends Medoo {
     private function _commit() : bool
     {
         if(!$this->pdo instanceof \PDO){
-            $this->_error(new \PDOException('Connection: Db not connected.','-2'));
+            $this->_error(new \PDOException('Database is not connected.','-1'));
             $this->_setInTran();
             return false;
         }
         if($res = $this->pdo->commit()){
+            $this->setExpireTimestamp(0);
             $this->_setInTran();
         }
         return $res;
-    }
-
-    private function _reset($return)
-    {
-        $this->setExpireTimestamp(0);
-        return $return;
     }
 }

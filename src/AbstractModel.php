@@ -12,11 +12,14 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractModel {
     /**
-     * @var string 表名 请继承重写
+     * @var string 表名
+     * @example $_table = 'demo'
      */
     protected $_table;
+
     /**
-     * @var string 库名 请继承重写
+     * @var string 库名
+     * @example $_dbName = 'demo'
      */
     protected $_dbName;
 
@@ -32,6 +35,10 @@ abstract class AbstractModel {
     protected $_slave   = false;
     protected $_logger  = null;
 
+    /**
+     * @param bool $key
+     * @return $this
+     */
     public function slave(bool $key) : AbstractModel
     {
         $this->_slave = $key;
