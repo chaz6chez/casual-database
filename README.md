@@ -1,9 +1,13 @@
 # casual-database
 **Casual Long-living MySQL connection for daemon.**
 ## 说明
-- 基于[Medoo2.1.x]()的语法
-  - [where语法](./docs/where.md)
+- 基于 [Medoo2.1.x](https://medoo.in/doc) 语法
+  - [where](./docs/where.md)
+    
+- 兼容链式调用
+  
 - 符合常驻内存应用的长连接
+  
 - 支持 驱动
   
   |Name|Driver|
@@ -13,7 +17,8 @@
   |SQLite	|php_pdo_sqlite|
   |PostgreSQL|	php_pdo_pgsql|
   
-- 符合标准 SQLSTATE code 识别
+- 符合SQL标准错误码的 SQLSTATE 映射表
+    - [SQLSTATE参考表](./docs/SQLSTATE.md)  
 - 预置事件 
 
   |事件|类型|描述|
