@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Database;
 
 use Database\Exceptions\DatabaseException;
+use Database\Tools\Raw;
 use PDO;
 use PDOStatement;
 use PDOException;
@@ -164,7 +165,12 @@ class Connection {
      */
     public function where($where) : Connection
     {
-        $this->_where = array_merge($this->_where, $where);
+        if($this->driver()->isRaw($where)){
+            $this->_where = $where;
+        }
+        if(is_array($where)){
+            $this->_where = array_merge($this->_where, $where);
+        }
         return $this;
     }
 
@@ -268,7 +274,8 @@ class Connection {
      * @param bool $filter
      * @return false|int|mixed|PDOStatement|string
      */
-    public function insert(array $data, bool $filter = false) {
+    public function insert(array $data, bool $filter = false)
+    {
         if($filter){
             $array = [];
             foreach ($data as $key => $v){
@@ -304,7 +311,8 @@ class Connection {
      * @param $data
      * @return false|int
      */
-    public function update($data) {
+    public function update($data)
+    {
         $res = $this->driver()->update($this->_table, $data, $this->_getWhere());
         $this->cleanup();
         return $res instanceof PDOStatement ? $res->rowCount() : false;
@@ -314,7 +322,8 @@ class Connection {
      * 删除
      * @return false|int
      */
-    public function delete() {
+    public function delete()
+    {
         $res = $this->driver()->delete($this->_table, $this->_getWhere());
 
     }
@@ -323,7 +332,8 @@ class Connection {
      * @param $columns
      * @return bool|PDOStatement
      */
-    public function replace($columns) {
+    public function replace($columns)
+    {
         $res = $this->driver()->replace($this->_table, $columns, $this->_getWhere());
         $this->cleanup();
         return $res instanceof PDOStatement ? $res->rowCount() : false;
@@ -333,7 +343,8 @@ class Connection {
      * @param bool $lock
      * @return false|array|string|null|mixed
      */
-    public function get(bool $lock = false) {
+    public function get(bool $lock = false)
+    {
         $res = $this->driver()->get(
             $this->_table,
             $this->_field,
@@ -447,31 +458,52 @@ class Connection {
         }
     }
 
+    /**
+     * @return array
+     */
     public function info() : array
     {
         return $this->driver()->info();
     }
 
+    /**
+     * @return array|null
+     */
     public function error() : ?array
     {
         return $this->driver()->error();
     }
 
+    /**
+     * @return string|null
+     */
     public function last() : ?string
     {
         return $this->driver()->last();
     }
 
+    /**
+     * @param string $string
+     * @return string
+     */
     public function quote(string $string) : string
     {
         return $this->driver()->quote($string);
     }
 
+    /**
+     * @param string $query
+     * @return PDOStatement|null
+     */
     public function query(string $query) :?PDOStatement
     {
         return $this->driver()->query($query);
     }
 
+    /**
+     * @param string $query
+     * @return PDOStatement|null
+     */
     public function exec(string $query) : ?PDOStatement
     {
         return $this->driver()->exec($query);
@@ -481,7 +513,8 @@ class Connection {
      * 开启事务
      * @return bool
      */
-    public function transaction() :bool{
+    public function transaction() : bool
+    {
         try {
             $this->driver()->transaction();
             return true;
@@ -502,14 +535,16 @@ class Connection {
     /**
      * 执行事务提交
      */
-    public function commit() : ?bool{
+    public function commit() : void
+    {
         $this->driver()->commit();
     }
 
     /**
      * 属性参数初始化
      */
-    public function cleanup() {
+    public function cleanup(): void
+    {
         $this->_join       = [];
         $this->_field      = '*';
         $this->_where      = [];
@@ -520,7 +555,11 @@ class Connection {
         $this->_error      = null;
     }
 
-    public function getParams() : array{
+    /**
+     * @return array
+     */
+    public function getParams() : array
+    {
         return [
             'table'      => $this->_table,
             'join'       => $this->_join,
@@ -533,7 +572,10 @@ class Connection {
         ];
     }
 
-    public function setParams($params) {
+    /**
+     * @param $params
+     */
+    public function setParams(array $params) {
         empty($params['table']) || $this->_table = $params['table'];
         empty($params['join'])  || $this->_join  = $params['join'];
         empty($params['field']) || $this->_field = $params['field'];
@@ -544,8 +586,16 @@ class Connection {
         empty($params['cache']) || $this->_cache = $params['cache'];
     }
 
-    protected function _getWhere(array $array = []) : array{
+    /**
+     * @param array $array
+     * @return array|Raw
+     */
+    protected function _getWhere(array $array = [])
+    {
         $where = $this->_where;
+        if($this->driver()->isRaw($where)){
+            return $where;
+        }
         if ($this->_order) {
             $where['ORDER'] = $this->_order;
         }
@@ -558,7 +608,10 @@ class Connection {
         return array_merge($where, $array);
     }
 
-    public function log() : array
+    /**
+     * @return array|null
+     */
+    public function log() : ?array
     {
         return $this->driver()->log();
     }

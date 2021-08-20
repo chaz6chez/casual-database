@@ -368,6 +368,18 @@ class Driver {
     }
 
     /**
+     * @param $raw
+     * @return bool
+     */
+    public function isRaw($raw) : bool
+    {
+        if(is_object($raw) && $raw instanceof Raw){
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Quote a string for use in a query.
      *
      * @param string $string
@@ -475,7 +487,7 @@ class Driver {
      *
      * @param string $table
      * @param $join
-     * @param array|string $columns
+     * @param array|string|Raw $columns
      * @param array $where
      * @return array|null
      */
