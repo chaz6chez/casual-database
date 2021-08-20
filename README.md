@@ -1,10 +1,27 @@
 # casual-database
 **Casual Long-living MySQL connection for daemon.**
 ## 说明
-- 基于Medoo2.1.2的语法
+- 基于[Medoo2.1.x]()的语法
+  - [where语法](./docs/where.md)
 - 符合常驻内存应用的长连接
-- 支持 MySQL、ODBC、PGSQL、SQLITE
-- 符合标准SQLSTATE code识别
-- 支持【预处理前】【绑定前】【执行前】【执行后】的事件及回调插入  
-- 支持logger  
-- [Medoo文档](https://medoo.in/doc)
+- 支持 驱动
+  
+  |Name|Driver|
+  |:---:|:---:|
+  |MySQL, MariaDB|	php_pdo_mysql|
+  |ODBC	|php_pdo_odbc|
+  |SQLite	|php_pdo_sqlite|
+  |PostgreSQL|	php_pdo_pgsql|
+  
+- 符合标准 SQLSTATE code 识别
+- 预置事件 
+
+  |事件|类型|描述|
+  |:---:|:---:|:---:|
+  |onBeforePrepare|callable|预处理前|
+  |onBeforeBind|callable|绑定前|
+  |onBeforeExec|callable|执行前|
+  |onAfterExec|callable|执行后|
+  
+- 支持 logger  
+
