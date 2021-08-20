@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace Database;
 
-use Database\Exception\DbnameException;
+use Database\Exceptions\DbnameException;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractModel {
