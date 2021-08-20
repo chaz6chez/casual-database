@@ -287,6 +287,19 @@ class Connection {
     }
 
     /**
+     * @param string $table
+     * @param $data
+     * @param array|null $options
+     * @return bool
+     */
+    public function create(string $table, $data, array $options = null) : bool
+    {
+        $res = $this->driver()->create($table, $data, $options);
+        $this->cleanup();
+        return $res === null ? false : true;
+    }
+
+    /**
      * 更新数据
      * @param $data
      * @return false|int
@@ -318,7 +331,7 @@ class Connection {
 
     /**
      * @param bool $lock
-     * @return false|mixed
+     * @return false|array|string|null|mixed
      */
     public function get(bool $lock = false) {
         $res = $this->driver()->get(

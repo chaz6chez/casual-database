@@ -41,20 +41,6 @@ class CreateTest extends DriverTestCase
                 PRIMARY KEY ("id"))
                 AUTO_INCREMENT = 200
                 EOD,
-            'mssql' => <<<EOD
-                CREATE TABLE [account]
-                ([id] INT NOT NULL AUTO_INCREMENT,
-                [email] VARCHAR(70) NOT NULL UNIQUE,
-                PRIMARY KEY ([id]))
-                AUTO_INCREMENT = 200
-                EOD,
-            'oracle' => <<<EOD
-                CREATE TABLE "account"
-                ("id" INT NOT NULL AUTO_INCREMENT,
-                "email" VARCHAR(70) NOT NULL UNIQUE,
-                PRIMARY KEY ("id"))
-                AUTO_INCREMENT = 200
-                EOD
         ],
             $this->database->queryString
         );
@@ -80,16 +66,6 @@ class CreateTest extends DriverTestCase
                 ("id" INT NOT NULL AUTO_INCREMENT,
                 "email" VARCHAR(70) NOT NULL UNIQUE)
                 EOD,
-            'mssql' => <<<EOD
-                CREATE TABLE [account]
-                ([id] INT NOT NULL AUTO_INCREMENT,
-                [email] VARCHAR(70) NOT NULL UNIQUE)
-                EOD,
-            'oracle' => <<<EOD
-                CREATE TABLE "account"
-                ("id" INT NOT NULL AUTO_INCREMENT,
-                "email" VARCHAR(70) NOT NULL UNIQUE)
-                EOD
         ],
             $this->database->queryString
         );
@@ -124,18 +100,6 @@ class CreateTest extends DriverTestCase
                 "email" VARCHAR(70) NOT NULL UNIQUE)
                 TABLESPACE tablespace_name
                 EOD,
-            'mssql' => <<<EOD
-                CREATE TABLE [account]
-                ([id] INT NOT NULL AUTO_INCREMENT,
-                [email] VARCHAR(70) NOT NULL UNIQUE)
-                TABLESPACE tablespace_name
-                EOD,
-            'oracle' => <<<EOD
-                CREATE TABLE "account"
-                ("id" INT NOT NULL AUTO_INCREMENT,
-                "email" VARCHAR(70) NOT NULL UNIQUE)
-                TABLESPACE tablespace_name
-                EOD
         ],
             $this->database->queryString
         );
