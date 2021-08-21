@@ -1,3 +1,6 @@
+<b align="left">[返回文档](./../README.md)</b>
+***
+
 ## Select
 Select data from the table.
 ```injectablephp
@@ -424,3 +427,6 @@ $data = $database->select("account", [
 SELECT COUNT(DISTINCT "location") AS "unique_locations"
 FROM "account"
 ~~~
+
+***
+<b align="left">[返回文档](./../README.md)</b>

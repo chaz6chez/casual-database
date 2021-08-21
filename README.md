@@ -1,5 +1,11 @@
+
 # casual-database
+
 **Casual Long-living MySQL connection for daemon.**
+
+    This project is forked from Medoo and made a resident memory adaptation.
+    Thanks Medoo.
+
 ## 说明
 - 基于 [Medoo2.1.x](https://medoo.in/doc) 语法
   - [where](./docs/where.md)
