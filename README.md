@@ -12,6 +12,10 @@
   - [select](./docs/where.md)
     
 - 兼容链式调用
+  - Connection 链式调用连接类
+  - AbstractModel 模型层
+  - 支持 Master/Slave 数据库区分
+  - 支持多库
   
 - 符合常驻内存应用的长连接
   
