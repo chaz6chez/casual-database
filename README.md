@@ -3,6 +3,7 @@
 ## 说明
 - 基于 [Medoo2.1.x](https://medoo.in/doc) 语法
   - [where](./docs/where.md)
+  - [select](./docs/where.md)
     
 - 兼容链式调用
   
