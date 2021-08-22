@@ -46,8 +46,7 @@ class SelectTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            SELECT "name"
-            FROM "account" AS "user"
+            SELECT "name" FROM "account" AS "user"
             EOD,
             $this->database->queryString
         );
@@ -66,8 +65,7 @@ class SelectTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            SELECT "name"
-            FROM "account"
+            SELECT "name" FROM "account"
             EOD,
             $this->database->queryString
         );
@@ -86,8 +84,7 @@ class SelectTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            SELECT "name","id"
-            FROM "account"
+            SELECT "name","id" FROM "account"
             EOD,
             $this->database->queryString
         );
@@ -106,8 +103,7 @@ class SelectTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            SELECT "name" AS "nickname","id"
-            FROM "account"
+            SELECT "name" AS "nickname","id" FROM "account"
             EOD,
             $this->database->queryString
         );
@@ -126,8 +122,7 @@ class SelectTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            SELECT "name","data"
-            FROM "account"
+            SELECT "name","data" FROM "account"
             EOD,
             $this->database->queryString
         );

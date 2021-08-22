@@ -5,9 +5,8 @@ namespace Database\Tests;
 
 use Database\AbstractModel;
 use Database\Connection;
-use PHPUnit\Framework\TestCase;
 
-class ModelTestCase extends TestCase
+class ModelTestCase extends BaseTestCase
 {
     protected $model;
     protected $database;
@@ -34,26 +33,17 @@ class ModelTestCase extends TestCase
         return $this->database;
     }
 
-    public function expectedQuery($expected): string
-    {
-        return preg_replace(
-            '/(?!\'[^\s]+\s?)"([\p{L}_][\p{L}\p{N}@$#\-_]*)"(?!\s?[^\s]+\')/u',
-            '`$1`',
-            str_replace("\n", " ", $expected)
-        );
-    }
-
     public function assertQuery($expected, $query): void
     {
         if (is_array($expected)) {
             $this->assertEquals(
-                $this->expectedQuery(
+                $this->_expectedQuery(
                     $expected[$this->database->driver()->options()->driver] ?? $expected['default']
                 ),
                 $query
             );
         } else {
-            $this->assertEquals($this->expectedQuery($expected), $query);
+            $this->assertEquals($this->_expectedQuery($expected), $query);
         }
     }
 }

@@ -40,8 +40,8 @@ class CreateTest extends DriverTestCase
                 "email" VARCHAR(70) NOT NULL UNIQUE,
                 PRIMARY KEY ("id"))
                 AUTO_INCREMENT = 200
-                EOD,
-        ],
+                EOD
+            ],
             $this->database->queryString
         );
     }

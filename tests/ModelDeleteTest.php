@@ -30,7 +30,7 @@ class ModelDeleteTest extends ModelTestCase
             DELETE FROM "demo"
             WHERE ("type" = 'business' AND "age" < 18)
             EOD,
-            $this->database->queryString
+            $this->database->driver()->queryString
         );
     }
 }

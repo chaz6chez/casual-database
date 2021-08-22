@@ -63,6 +63,6 @@ class ModelUpdateTest extends ModelTestCase
                 "object" = 'O:18:\"Database\Tests\Foo\":1:{s:3:\"bar\";s:3:\"cat\";}'
                 WHERE "user_id" < 1000
                 EOD,
-        ], $this->database->queryString);
+        ], $this->database->driver()->queryString);
     }
 }

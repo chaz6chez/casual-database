@@ -175,8 +175,7 @@ class InsertTest extends DriverTestCase
             ]
         ]);
 
-        $this->assertQuery(
-            <<<EOD
+        $this->assertQuery(<<<EOD
             INSERT INTO "account" ("user_name", "email")
             VALUES ('foo', 'foo@bar.com'), ('bar', 'bar@foo.com')
             EOD,

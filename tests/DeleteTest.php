@@ -25,8 +25,8 @@ class DeleteTest extends DriverTestCase
 
         $this->assertQuery(
             <<<EOD
-            DELETE FROM "account"
-            WHERE ("type" = 'business' AND "age" < 18)
+            DELETE FROM `account`
+            WHERE (`type` = 'business' AND `age` < 18)
             EOD,
             $this->database->queryString
         );

@@ -21,7 +21,7 @@
     "source": "https://github.com/chaz6chez/casual-database"
   },
   "require": {
-    "php": ">=7.2",
+    "php": ">=7.3",
     "ext-pdo": "*",
     "ext-json": "*",
     "psr/log": "^1.0"

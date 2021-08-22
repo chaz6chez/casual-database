@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace Database\Tests;
 
 use Database\Driver;
-use PHPUnit\Framework\TestCase;
 
-class DriverTestCase extends TestCase
+class DriverTestCase extends BaseTestCase
 {
     protected $database;
 
@@ -20,7 +19,6 @@ class DriverTestCase extends TestCase
             'dsn' => '',
             'debug' => true,
         ]);
-        $this->database = $this->database->debug();
     }
 
     public function typesProvider(): array
@@ -38,34 +36,15 @@ class DriverTestCase extends TestCase
         $this->database->options()->driver = $type;
     }
 
-    public function expectedQuery($expected): string
-    {
-        return preg_replace(
-            '/(?!\'[^\s]+\s?)"([\p{L}_][\p{L}\p{N}@$#\-_]*)"(?!\s?[^\s]+\')/u',
-            '`$1`',
-            str_replace("\n", " ", $expected)
-        );
-    }
-
     public function assertQuery($expected, $query): void
     {
         if (is_array($expected)) {
             $this->assertEquals(
-                $this->expectedQuery($expected[$this->database->options()->driver] ?? $expected['default']),
+                $this->_expectedQuery($expected[$this->database->options()->driver] ?? $expected['default']),
                 $query
             );
         } else {
-            $this->assertEquals($this->expectedQuery($expected), $query);
+            $this->assertEquals($this->_expectedQuery($expected), $query);
         }
-    }
-}
-
-class Foo
-{
-    public $bar = "cat";
-
-    public function __wakeup()
-    {
-        $this->bar = "dog";
     }
 }

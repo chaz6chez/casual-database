@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Database;
 
 use Database\Exceptions\DatabaseException;
+use Database\Exceptions\DatabaseInvalidArgumentException;
 use Database\Tools\Raw;
 use PDO;
 use PDOStatement;
@@ -331,6 +332,7 @@ class Connection {
     /**
      * @param $columns
      * @return bool|PDOStatement
+     * @throws DatabaseInvalidArgumentException
      */
     public function replace($columns)
     {

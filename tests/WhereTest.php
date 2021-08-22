@@ -1027,14 +1027,14 @@ class WhereTest extends DriverTestCase
         $this->database->select(
             "account",
             "user_name",
-            Driver::raw("WHERE <id> => 10")
+            Driver::raw("WHERE <id> = 10")
         );
 
         $this->assertQuery(
             <<<EOD
             SELECT "user_name"
             FROM "account"
-            WHERE "id" => 10
+            WHERE "id" = 10
             EOD,
             $this->database->queryString
         );
