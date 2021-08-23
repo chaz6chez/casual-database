@@ -527,6 +527,16 @@ class Connection {
     }
 
     /**
+     * 开启事务
+     * @return bool
+     * @see Connection::transaction()
+     */
+    public function beginTransaction() : bool
+    {
+        return $this->transaction();
+    }
+
+    /**
      * 事务回滚
      */
     public function rollback() : void
