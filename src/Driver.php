@@ -320,8 +320,7 @@ class Driver {
             if(is_callable($this->onBeforeExec)){
                 ($this->onBeforeExec)($this);
             }
-            $this->_statement->execute();
-            if(!$this->_statement instanceof PDOStatement){
+            if(!$this->_statement->execute()){
                 goto exec_crash;
             }
             $this->_count = 0;
@@ -352,18 +351,16 @@ class Driver {
             }
             return $this->_statement;
         } finally {
-            if($this->_logger and isset($exception)){
-                $this->_logger->error('Database Execute Error.',[
-                    $exception->getMessage(),
-                    $exception->getCode(),
-                    $exception->getTrace(),
-                    $exception
-                ]);
+            if($this->_logger){
+                if($error = $this->error()){
+                    $this->_logger->error('Database Execute Error.',$this->error());
+                }else{
+                    $this->_logger->debug('Database Execute Success.', [$this->last()]);
+                }
             }
             if(is_callable($this->onAfterExec)){
                 ($this->onAfterExec)($this);
             }
-            $this->_clean();
         }
     }
 
@@ -984,35 +981,66 @@ class Driver {
                     break;
                 case StateConstant::isInterrupt($state):
                     throw new DatabaseException($this->_driver_message, $this->_driver_code);
-                    break;
             }
             throw new TransactionException($this->_driver_message, $this->_driver_code);
         } finally {
-            $this->_clean();
+            if($this->_logger){
+                if($error = $this->error()){
+                    $this->_logger->error('Database Begin Transaction Error.',$this->error());
+                }else{
+                    $this->_logger->debug('Database Begin Transaction Success.', [$this->last()]);
+                }
+            }
         }
     }
 
     public function rollback(){
         try {
             if($this->pdo()->inTransaction()){
+                $this->_clean();
                 $this->pdo()->rollBack();
             }
         }catch (PDOException $exception) {
+            $this->_error = isset($exception) ? $exception->errorInfo : $this->pdo()->errorInfo();
+            [
+                $this->_sqlstate,
+                $this->_driver_code,
+                $this->_driver_message
+            ] = $this->_error;
             $this->close();
         } finally {
-            $this->_clean();
+            if($this->_logger){
+                if($error = $this->error()){
+                    $this->_logger->error('Database Rollback Transaction Error.',$this->error());
+                }else{
+                    $this->_logger->debug('Database Rollback Transaction Success.', [$this->last()]);
+                }
+            }
         }
     }
 
     public function commit(){
         try {
             if($this->pdo()->inTransaction()){
+                $this->_clean();
                 $this->pdo()->commit();
             }
         }catch (PDOException $exception) {
+            $this->_error = isset($exception) ? $exception->errorInfo : $this->pdo()->errorInfo();
+            [
+                $this->_sqlstate,
+                $this->_driver_code,
+                $this->_driver_message
+            ] = $this->_error;
             $this->close();
         } finally {
-            $this->_clean();
+            if($this->_logger){
+                if($error = $this->error()){
+                    $this->_logger->error('Database Commit Transaction Error.',$this->error());
+                }else{
+                    $this->_logger->debug('Database Commit Transaction Success.', [$this->last()]);
+                }
+            }
         }
     }
 
