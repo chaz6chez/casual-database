@@ -38,6 +38,7 @@ class Connection {
     protected $_order;
     protected $_limit;
     protected $_group;
+    protected $_having = [];
     protected $_cache = false;
     protected $_logger;
 
@@ -181,15 +182,14 @@ class Connection {
      */
     public function order($order) : Connection
     {
-        if (is_array($order)) {
-            $this->_order = $order;
-            return $this;
-        }
-        if (is_string($order)){
-            $order = explode(' ',$order);
-            if(count($order) > 1){
+        if (is_string($order)) {
+            $order = explode(' ', $order);
+            if (count($order) > 1) {
                 $this->_order[$order[0]] = $order[1];
             }
+        }
+        if (is_array($order) or $this->driver()->isRaw($order)) {
+            $this->_order = $order;
         }
         return $this;
     }
@@ -221,13 +221,30 @@ class Connection {
      */
     public function group($group) : Connection
     {
-        if (is_array($group)) {
-            if (is_array($this->_group)) {
-                $this->_group = array_merge($this->_group, $group);
-                return $this;
+        if (
+            is_string($group) or
+            is_array($group) or
+            $this->driver()->isRaw($group)
+        ) {
+            $this->_group = $group;
+        }
+        return $this;
+    }
+
+    /**
+     * @param $having
+     * @return Connection
+     */
+    public function having($having): Connection
+    {
+        if ($this->driver()->isRaw($having)) {
+            $this->_having = $having;
+        }
+        if (is_array($having)) {
+            if (is_array($this->_having)) {
+                $this->_having = array_merge($this->_having, $having);
             }
         }
-        $this->_group = $group;
         return $this;
     }
 
@@ -321,12 +338,11 @@ class Connection {
 
     /**
      * 删除
-     * @return false|int
+     * @return PDOStatement|null
      */
-    public function delete()
+    public function delete(): ?PDOStatement
     {
-        $res = $this->driver()->delete($this->_table, $this->_getWhere());
-
+        return $this->driver()->delete($this->_table, $this->_getWhere());
     }
 
     /**
@@ -563,6 +579,7 @@ class Connection {
         $this->_order      = null;
         $this->_limit      = null;
         $this->_group      = null;
+        $this->_having     = [];
         $this->_cache      = true;
         $this->_error      = null;
     }
@@ -580,6 +597,7 @@ class Connection {
             'order'      => $this->_order,
             'limit'      => $this->_limit,
             'group'      => $this->_group,
+            'having'     => $this->_having,
             'cache'      => $this->_cache,
         ];
     }
@@ -595,6 +613,7 @@ class Connection {
         empty($params['order']) || $this->_order = $params['order'];
         empty($params['limit']) || $this->_limit = $params['limit'];
         empty($params['group']) || $this->_group = $params['group'];
+        empty($params['having']) || $this->_having = $params['having'];
         empty($params['cache']) || $this->_cache = $params['cache'];
     }
 
@@ -616,6 +635,9 @@ class Connection {
         }
         if ($this->_group) {
             $where['GROUP'] = $this->_group;
+        }
+        if ($this->_having) {
+            $where['HAVING'] = $this->_having;
         }
         return array_merge($where, $array);
     }
