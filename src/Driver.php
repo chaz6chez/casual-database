@@ -1248,7 +1248,8 @@ class Driver {
                                 $map[$stackKey] = $this->_typeMap($item, gettype($item));
                             }
 
-                            $stack[] = $column . ' NOT IN (' . implode(', ', $placeholders) . ')';
+//                            $stack[] = $column . ' NOT IN (' . implode(', ', $placeholders) . ')';
+                            $stack[] = $column . ' NOT IN (' . ($placeholders ? implode(', ', $placeholders): 'NULL') . ')';
                             break;
 
                         case 'object':
@@ -1334,7 +1335,8 @@ class Driver {
                         $map[$stackKey] = $this->_typeMap($item, gettype($item));
                     }
 
-                    $stack[] = $column . ' IN (' . implode(', ', $placeholders) . ')';
+//                    $stack[] = $column . ' IN (' . implode(', ', $placeholders) . ')';
+                    $stack[] = $column . ' IN (' . ($placeholders ? implode(', ', $placeholders): 'NULL') . ')';
                     break;
 
                 case 'object':
@@ -1511,11 +1513,11 @@ class Driver {
             }
 
             if (is_string($relation)) {
-                $relation = 'USING ("' . $relation . '")';
+                $relation = 'USING (`' . $relation . '`)';
             } elseif (is_array($relation)) {
                 // For ['column1', 'column2']
                 if (isset($relation[0])) {
-                    $relation = 'USING ("' . implode('", "', $relation) . '")';
+                    $relation = 'USING (`' . implode('`, `', $relation) . '`)';
                 } else {
                     $joins = [];
 
