@@ -27,12 +27,13 @@ abstract class AbstractModel {
     /**
      * @var Connection[]
      */
-    protected $_dbMaster = [];
+    protected static $_dbMaster = [];
 
     /**
      * @var Connection[]
      */
-    protected $_dbSlave = [];
+    protected static $_dbSlave = [];
+
     protected $_slave   = false;
     protected $_logger  = null;
 
@@ -78,23 +79,23 @@ abstract class AbstractModel {
         }
         if(!$master){
             if (
-                !isset($this->_dbSlave[$this->_dbName]) or
-                !$this->_dbSlave[$this->_dbName] instanceof Connection
+                !isset(self::$_dbSlave[$this->_dbName]) or
+                !self::$_dbSlave[$this->_dbName] instanceof Connection
             ) {
-                $res = $this->_dbSlave[$this->_dbName] =
+                $res = self::$_dbSlave[$this->_dbName] =
                     (new Connection())($this->_slaveConfig(), $this->_logger)->activate();
             }else{
-                $res = $this->_dbSlave[$this->_dbName];
+                $res = self::$_dbSlave[$this->_dbName];
             }
         }else{
             if (
-                !isset($this->_dbMaster[$this->_dbName]) or
-                !$this->_dbMaster[$this->_dbName] instanceof Connection
+                !isset(self::$_dbMaster[$this->_dbName]) or
+                !self::$_dbMaster[$this->_dbName] instanceof Connection
             ) {
-                $res = $this->_dbMaster[$this->_dbName] =
+                $res = self::$_dbMaster[$this->_dbName] =
                     (new Connection())($this->_masterConfig(), $this->_logger)->activate();
             }else{
-                $res = $this->_dbMaster[$this->_dbName];
+                $res = self::$_dbMaster[$this->_dbName];
             }
         }
         return $res;
