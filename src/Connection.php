@@ -64,6 +64,8 @@ class Connection {
                     $this->_error = "db server exception : {$e->getMessage()}";
                 }catch (Throwable $e){
                     $this->_error = "exception : {$e->getMessage()}";
+                }finally {
+                    if(isset($e) and $e instanceof Throwable) throw $e;
                 }
             }else{
                 $this->_error = 'config error';
