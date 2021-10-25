@@ -100,6 +100,19 @@ class Driver {
         }
     }
 
+    public function __destruct()
+    {
+        $this->_driver->destruct($this);
+    }
+
+    /**
+     * @return LoggerInterface|null
+     */
+    public function logger(): ?LoggerInterface
+    {
+        return $this->_logger;
+    }
+
     /**
      * @throws PDOException
      */
@@ -170,7 +183,7 @@ class Driver {
             $this->setExpireTimestamp(0);
         }
         $this->_driver->destruct($this);
-        unset($this->pdo);
+        $this->_pdo = null;
     }
 
     /**
@@ -346,7 +359,7 @@ class Driver {
                 case StateConstant::isError($state):
                 default:
                     $this->_count = 0;
-                    unset($this->_statement);
+                    $this->_statement = null;
                     break;
             }
             return $this->_statement;

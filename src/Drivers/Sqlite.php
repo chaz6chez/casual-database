@@ -31,7 +31,12 @@ class Sqlite implements DriverInterface {
      */
     public function destruct(Driver &$driver): void
     {
-        // TODO: Implement destruct() method.
+        try {
+            if($driver->pdo()){
+                $driver->close();
+                $driver->rollback();
+            }
+        }catch (\PDOException $exception){}
     }
 
     /**
