@@ -224,6 +224,11 @@ class Driver {
         return $this->_pdo;
     }
 
+    public function pdoReset() : void
+    {
+        $this->_pdo = null;
+    }
+
     /**
      * 获取配置信息
      * @return Options|null
