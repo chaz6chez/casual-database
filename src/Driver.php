@@ -444,11 +444,11 @@ class Driver {
     /**
      * Create a table.
      * @param string $table
-     * @param $columns [Columns definition.]
+     * @param array $columns [Columns definition.]
      * @param array $options Additional table options for creating a table.
      * @return PDOStatement|null
      */
-    public function create(string $table, $columns, $options = null): ?PDOStatement
+    public function create(string $table, array $columns, $options = null): ?PDOStatement
     {
         $stack = [];
         $tableOption = '';
@@ -458,9 +458,9 @@ class Driver {
             if (is_int($name)) {
                 $stack[] = preg_replace('/\<([\p{L}_][\p{L}\p{N}@$#\-_]*)\>/u', '"$1"', $definition);
             } elseif (is_array($definition)) {
-                $stack[] = $this->columnQuote($name) . ' ' . implode(' ', $definition);
+                $stack[] = $this->columnQuote((string)$name) . ' ' . implode(' ', $definition);
             } elseif (is_string($definition)) {
-                $stack[] = $this->columnQuote($name) . ' ' . $definition;
+                $stack[] = $this->columnQuote((string)$name) . ' ' . $definition;
             }
         }
 
@@ -649,7 +649,7 @@ class Driver {
         }
 
         foreach ($columns as $key) {
-            $fields[] = $this->columnQuote(preg_replace("/(\s*\[JSON\]$)/i", '', $key));
+            $fields[] = $this->columnQuote((string)preg_replace("/(\s*\[JSON\]$)/i", '', $key));
         }
 
         $query = 'INSERT INTO ' . $this->tableQuote($table) . ' (' . implode(', ', $fields) . ') VALUES ' . implode(', ', $stack);
@@ -670,7 +670,7 @@ class Driver {
         $map = [];
 
         foreach ($data as $key => $value) {
-            $column = $this->columnQuote(preg_replace("/(\s*\[(JSON|\+|\-|\*|\/)\]$)/", '', $key));
+            $column = $this->columnQuote((string)preg_replace("/(\s*\[(JSON|\+|\-|\*|\/)\]$)/", '', $key));
             $type = gettype($value);
 
             if ($raw = $this->_buildRaw($value, $map)) {
@@ -750,7 +750,7 @@ class Driver {
             if (is_array($replacements)) {
                 foreach ($replacements as $old => $new) {
                     $mapKey = $this->_mapKey();
-                    $columnName = $this->columnQuote($column);
+                    $columnName = $this->columnQuote((string)$column);
                     $stack[] = "{$columnName} = REPLACE({$columnName}, {$mapKey}a, {$mapKey}b)";
 
                     $map[$mapKey . 'a'] = [$old, PDO::PARAM_STR];
@@ -1161,7 +1161,7 @@ class Driver {
                 $stack[] = $this->_columnPush($value, $map, false, $isJoin);
             } elseif (!$isIntKey && $raw = $this->_buildRaw($value, $map)) {
                 preg_match('/(?<column>[\p{L}_][\p{L}\p{N}@$#\-_\.]*)(\s*\[(?<type>(String|Bool|Int|Number))\])?/u', $key, $match);
-                $stack[] = "{$raw} AS {$this->columnQuote($match['column'])}";
+                $stack[] = "{$raw} AS {$this->columnQuote((string)$match['column'])}";
             } elseif ($isIntKey && is_string($value)) {
                 if ($isJoin && strpos($value, '*') !== false) {
                     throw new InvalidArgumentException('Cannot use table.* to select all columns while joining table.');
@@ -1170,14 +1170,14 @@ class Driver {
                 preg_match('/(?<column>[\p{L}_][\p{L}\p{N}@$#\-_\.]*)(?:\s*\((?<alias>[\p{L}_][\p{L}\p{N}@$#\-_]*)\))?(?:\s*\[(?<type>(?:String|Bool|Int|Number|Object|JSON))\])?/u', $value, $match);
 
                 if (!empty($match['alias'])) {
-                    $columnString = "{$this->columnQuote($match['column'])} AS {$this->columnQuote($match['alias'])}";
+                    $columnString = "{$this->columnQuote((string)$match['column'])} AS {$this->columnQuote((string)$match['alias'])}";
                     $columns[$key] = $match['alias'];
 
                     if (!empty($match['type'])) {
                         $columns[$key] .= ' [' . $match['type'] . ']';
                     }
                 } else {
-                    $columnString = $this->columnQuote($match['column']);
+                    $columnString = $this->columnQuote((string)$match['column']);
                 }
 
                 if (!$hasDistinct && strpos($value, '@') === 0) {
@@ -1227,11 +1227,11 @@ class Driver {
                 $match
             );
 
-            $column = $this->columnQuote($match[1]);
+            $column = $this->columnQuote((string)$match[1]);
             $operator = $match['operator'] ?? null;
 
             if ($isIndex && isset($match[4]) && in_array($operator, ['>', '>=', '<', '<=', '=', '!='])) {
-                $stack[] = "${column} ${operator} " . $this->columnQuote($match[4]);
+                $stack[] = "${column} ${operator} " . $this->columnQuote((string)$match[4]);
                 continue;
             }
 
@@ -1467,7 +1467,7 @@ class Driver {
                 if (!empty($matches[4])) {
                     return $matches[1] . $matches[4] . ' ' . $this->tableQuote($matches[5]);
                 }
-                return $matches[1] . $this->columnQuote($matches[5]);
+                return $matches[1] . $this->columnQuote((string)$matches[5]);
             },
             $raw->value
         );
@@ -1548,13 +1548,13 @@ class Driver {
                         $joins[] = (
                             strpos($key, '.') > 0 ?
                                 // For ['tableB.column' => 'column']
-                                $this->columnQuote($key) :
+                                $this->columnQuote((string)$key) :
 
                                 // For ['column1' => 'column2']
-                                $table . '.' . $this->columnQuote($key)
+                                $table . '.' . $this->columnQuote((string)$key)
                             ) .
                             ' = ' .
-                            $this->tableQuote($match['alias'] ?? $match['table']) . '.' . $this->columnQuote($value);
+                            $this->tableQuote($match['alias'] ?? $match['table']) . '.' . $this->columnQuote((string)$value);
                     }
 
                     $relation = 'ON ' . implode(' AND ', $joins);
@@ -1812,14 +1812,14 @@ class Driver {
                     $stack = [];
 
                     foreach ($group as $column => $value) {
-                        $stack[] = $this->columnQuote($value);
+                        $stack[] = $this->columnQuote((string)$value);
                     }
 
                     $clause .= ' GROUP BY ' . implode(',', $stack);
                 } elseif ($raw = $this->_buildRaw($group, $map)) {
                     $clause .= ' GROUP BY ' . $raw;
                 } else {
-                    $clause .= ' GROUP BY ' . $this->columnQuote($group);
+                    $clause .= ' GROUP BY ' . $this->columnQuote((string)$group);
                 }
             }
 
@@ -1848,11 +1848,11 @@ class Driver {
                             }
 
                             $valueString = implode(',', $valueStack);
-                            $stack[] = "FIELD({$this->columnQuote($column)}, {$valueString})";
+                            $stack[] = "FIELD({$this->columnQuote((string)$column)}, {$valueString})";
                         } elseif ($value === 'ASC' || $value === 'DESC') {
-                            $stack[] = $this->columnQuote($column) . ' ' . $value;
+                            $stack[] = $this->columnQuote((string)$column) . ' ' . $value;
                         } elseif (is_int($column)) {
-                            $stack[] = $this->columnQuote($value);
+                            $stack[] = $this->columnQuote((string)$value);
                         }
                     }
 
@@ -1860,7 +1860,7 @@ class Driver {
                 } elseif ($raw = $this->_buildRaw($order, $map)) {
                     $clause .= ' ORDER BY ' . $raw;
                 } else {
-                    $clause .= ' ORDER BY ' . $this->columnQuote($order);
+                    $clause .= ' ORDER BY ' . $this->columnQuote((string)$order);
                 }
             }
 

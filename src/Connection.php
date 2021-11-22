@@ -102,7 +102,7 @@ class Connection {
 
     /**
      * 获得PDO对象
-     * @return \PDO|null
+     * @return PDO|null
      */
     public function pdo() : ?PDO
     {
@@ -112,7 +112,7 @@ class Connection {
     /**
      * 设置表名
      * @param $table
-     * @return Connection
+     * @return static
      */
     public function table($table) : Connection
     {
@@ -123,7 +123,7 @@ class Connection {
     /**
      * 设置表名
      * @param $table
-     * @return Connection
+     * @return static
      */
     public function from($table) : Connection
     {
@@ -133,7 +133,7 @@ class Connection {
 
     /**
      * @param $join
-     * @return Connection
+     * @return static
      */
     public function join($join) : Connection
     {
@@ -142,53 +142,47 @@ class Connection {
     }
 
     /**
-     * @param $field
-     * @return Connection
+     * @param string|array $field
+     * @return static
      */
     public function field($field) : Connection
     {
-        if(is_string($field)){
-            $fields = explode(',', $field);
-            if(count($fields) > 1){
-                $field = $fields;
+        if($field){
+            if(is_string($field)){
+                $this->_field = (count($fields = explode(',', $field)) > 1) ? $fields : $field;
+            }
+            if (is_array($field)) {
+                $this->_field = $field;
             }
         }
-        if (is_array($field)) {
-            if (is_array($this->_field)) {
-                $this->_field = array_merge($this->_field, $field);
-                return $this;
-            }
-        }
-        $this->_field = $field;
         return $this;
     }
 
     /**
-     * @param $where
-     * @return Connection
+     * @param Raw|array $where
+     * @return static
      */
     public function where($where) : Connection
     {
-        if($this->driver()->isRaw($where)){
+        if(
+            $this->driver()->isRaw($where) or
+            is_array($where)
+        ){
             $this->_where = $where;
-        }
-        if(is_array($where)){
-            $this->_where = array_merge($this->_where, $where);
         }
         return $this;
     }
 
     /**
-     * @param $order
-     * @return Connection
+     * @param string|array|Raw $order
+     * @return static
      */
     public function order($order) : Connection
     {
         if (is_string($order)) {
-            $order = explode(' ', $order);
-            if (count($order) > 1) {
-                $this->_order[$order[0]] = $order[1];
-            }
+            $this->_order = (count($orders = explode(' ', $order)) > 1)
+                ? [(string)$orders[0] => (string)$orders[1]]
+                : $order;
         }
         if (is_array($order) or $this->driver()->isRaw($order)) {
             $this->_order = $order;
@@ -218,7 +212,7 @@ class Connection {
     }
 
     /**
-     * @param $group
+     * @param string|array|Raw $group
      * @return Connection
      */
     public function group($group) : Connection
@@ -234,18 +228,16 @@ class Connection {
     }
 
     /**
-     * @param $having
+     * @param Raw|array $having
      * @return Connection
      */
     public function having($having): Connection
     {
-        if ($this->driver()->isRaw($having)) {
+        if (
+            $this->driver()->isRaw($having) or
+            is_array($having)
+        ) {
             $this->_having = $having;
-        }
-        if (is_array($having)) {
-            if (is_array($this->_having)) {
-                $this->_having = array_merge($this->_having, $having);
-            }
         }
         return $this;
     }
@@ -267,25 +259,22 @@ class Connection {
 
     /**
      * 获取单条数据
-     * @param false $lock
+     * @param bool $lock
      * @return array|false|mixed|null
      */
-    public function find($lock = false)
+    public function find(bool $lock = false)
     {
-        if($this->isActivated()){
-            $this->limit(1);
-            $where = $lock ? $this->_getWhere([
-                'FOR UPDATE' => true
-            ]) : $this->_getWhere();
-            if ($this->_join) {
-                $res = $this->driver()->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
-            } else {
-                $res = $this->driver()->select($this->_table, $this->_field, $where);
-            }
-            $this->cleanup();
-            return $res ? $res[0] : $res;
+        $this->limit(1);
+        $where = $lock ? $this->_getWhere([
+            'FOR UPDATE' => true
+        ]) : $this->_getWhere();
+        if ($this->_join) {
+            $res = $this->driver()->select($this->_table, $this->_join, $this->_field, $this->_getWhere());
+        } else {
+            $res = $this->driver()->select($this->_table, $this->_field, $where);
         }
-        return false;
+        $this->cleanup();
+        return $res === null ? false : ((is_array($res) and  isset($res[0]))? $res[0] : $res);
     }
 
     /**
@@ -315,11 +304,11 @@ class Connection {
 
     /**
      * @param string $table
-     * @param $data
+     * @param array $data
      * @param array|null $options
      * @return bool
      */
-    public function create(string $table, $data, array $options = null) : bool
+    public function create(string $table, array $data, array $options = null) : bool
     {
         $res = $this->driver()->create($table, $data, $options);
         $this->cleanup();
@@ -331,7 +320,7 @@ class Connection {
      * @param $data
      * @return false|int
      */
-    public function update($data)
+    public function update(array $data)
     {
         $res = $this->driver()->update($this->_table, $data, $this->_getWhere());
         $this->cleanup();
