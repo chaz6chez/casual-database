@@ -46,6 +46,9 @@
     }
   },
   "scripts": {
-    "test": "vendor/bin/phpunit tests"
+    "test": "vendor/bin/phpunit tests",
+    "post-autoload-dump": [
+      "@php -r \"!is_dir('config') || file_exists('config/database.php') || copy('database.php', 'config/database.php');\""
+    ]
   }
 }
