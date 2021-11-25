@@ -51,19 +51,19 @@ class Driver {
     /**
      * @var null|callable
      */
-    public $onBeforePrepare = null;
+    public static $onBeforePrepare = null;
     /**
      * @var null|callable
      */
-    public $onBeforeBind = null;
+    public static $onBeforeBind = null;
     /**
      * @var null|callable
      */
-    public $onBeforeExec = null;
+    public static $onBeforeExec = null;
     /**
      * @var null|callable
      */
-    public $onAfterExec = null;
+    public static $onAfterExec = null;
 
     public $queryString;
 
@@ -122,6 +122,7 @@ class Driver {
             return;
         }
         if(!$this->_pdo instanceof PDO){
+            $this->_logs = [];
             $this->_pdo = new PDO(
                 $this->getDsn(),
                 $this->options()->username,
@@ -317,8 +318,8 @@ class Driver {
                 return null;
             }
             $this->_logs = [[$statement, $map]];
-            if(is_callable($this->onBeforePrepare)){
-                ($this->onBeforePrepare)($this);
+            if(is_callable(self::$onBeforePrepare)){
+                (self::$onBeforePrepare)($this);
             }
             $this->_statement = $this->pdo()->prepare($statement);
             [
@@ -327,21 +328,20 @@ class Driver {
                 $this->_driver_message
             ] = $this->_error = $this->pdo()->errorInfo();
             if(!StateConstant::isSuccess($this->_driver->recognizer($this->_sqlstate))){
-                return null;
+                goto exec_crash;
             }
-            if(is_callable($this->onBeforeBind)){
-                ($this->onBeforeBind)($this);
+            if(is_callable(self::$onBeforeBind)){
+                (self::$onBeforeBind)($this);
             }
             foreach ($map as $key => $value) {
                 $this->_statement->bindValue($key, $value[0], $value[1]);
             }
-            if(is_callable($this->onBeforeExec)){
-                ($this->onBeforeExec)($this);
+            if(is_callable(self::$onBeforeExec)){
+                (self::$onBeforeExec)($this);
             }
             if(!$this->_statement->execute()){
                 goto exec_crash;
             }
-            $this->_count = 0;
             return $this->_statement;
         }catch (PDOException $exception){
             exec_crash:
@@ -363,21 +363,17 @@ class Driver {
                 case StateConstant::isInterrupt($state):
                 case StateConstant::isError($state):
                 default:
-                    $this->_count = 0;
                     $this->_statement = null;
                     break;
             }
             return $this->_statement;
         } finally {
-            if($this->_logger){
-                if($error = $this->error()){
-                    $this->_logger->error('Database Execute Error.',$this->error());
-                }else{
-                    $this->_logger->debug('Database Execute Success.', [$this->last()]);
-                }
+            $this->_count = 0;
+            if($this->_logger and $error = $this->error()){
+                $this->_logger->error('Database Execute Error.',$error);
             }
-            if(is_callable($this->onAfterExec)){
-                ($this->onAfterExec)($this);
+            if(is_callable(self::$onAfterExec)){
+                (self::$onAfterExec)($this);
             }
         }
     }
@@ -527,7 +523,7 @@ class Driver {
         $this->_columnMap($columns, $columnMap, true);
 
         if (!$this->_statement) {
-            return $result;
+            return null;
         }
 
         if ($columns === '*') {
@@ -1002,12 +998,8 @@ class Driver {
             }
             throw new TransactionException($this->_driver_message, $this->_driver_code);
         } finally {
-            if($this->_logger){
-                if($error = $this->error()){
-                    $this->_logger->error('Database Begin Transaction Error.',$this->error());
-                }else{
-                    $this->_logger->debug('Database Begin Transaction Success.', [$this->last()]);
-                }
+            if($this->_logger and ($error = $this->error())){
+                $this->_logger->error('Database Begin Transaction Error.',$error);
             }
         }
     }
@@ -1027,12 +1019,8 @@ class Driver {
             ] = $this->_error;
             $this->close();
         } finally {
-            if($this->_logger){
-                if($error = $this->error()){
-                    $this->_logger->error('Database Rollback Transaction Error.',$this->error());
-                }else{
-                    $this->_logger->debug('Database Rollback Transaction Success.', [$this->last()]);
-                }
+            if($this->_logger and ($error = $this->error())){
+                $this->_logger->error('Database Begin Transaction Error.',$error);
             }
         }
     }
@@ -1085,11 +1073,11 @@ class Driver {
      */
     public function last(): ?string
     {
-        if (empty($this->logs)) {
+        if (empty($this->_logs)) {
             return null;
         }
 
-        $log = $this->logs[array_key_last($this->logs)];
+        $log = $this->_logs[array_key_last($this->_logs)];
 
         return $this->_generate($log[0], $log[1]);
     }
