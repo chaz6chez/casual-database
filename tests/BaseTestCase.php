@@ -9,6 +9,7 @@ class BaseTestCase extends TestCase
 {
     protected function _expectedQuery($expected): string
     {
+        $expected = str_replace(["\r\n", "\r", "\n"], ' ', $expected);
         return preg_replace(
             '/(?!\'[^\s]+\s?)"([\p{L}_][\p{L}\p{N}@$#\-_]*)"(?!\s?[^\s]+\')/u',
             '`$1`',

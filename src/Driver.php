@@ -7,6 +7,7 @@ use Database\Drivers\Mysql;
 use Database\Drivers\Odbc;
 use Database\Drivers\Pgsql;
 use Database\Drivers\Sqlite;
+use Database\Exceptions\DatabaseConnectionException;
 use Database\Exceptions\DatabaseException;
 use Database\Exceptions\DatabaseInvalidArgumentException;
 use Database\Exceptions\TransactionException;
@@ -48,23 +49,28 @@ class Driver {
     protected $_driver_code;
     protected $_driver_message;
 
-    /**
-     * @var null|callable
-     */
+    /** @var null|callable  */
     public static $onBeforePrepare = null;
-    /**
-     * @var null|callable
-     */
+
+    /** @var null|callable  */
     public static $onBeforeBind = null;
-    /**
-     * @var null|callable
-     */
+
+    /** @var null|callable  */
     public static $onBeforeExec = null;
-    /**
-     * @var null|callable
-     */
+
+    /** @var null|callable  */
     public static $onAfterExec = null;
 
+    /** @var null|callable  */
+    public static $onAfterTransaction = null;
+
+    /** @var null|callable  */
+    public static $onAfterRollback = null;
+
+    /** @var null|callable  */
+    public static $onAfterCommit = null;
+
+    /** @var null|string */
     public $queryString;
 
     /**
@@ -100,6 +106,9 @@ class Driver {
         }
     }
 
+    /**
+     * Driver destructor.
+     */
     public function __destruct()
     {
         $this->_driver->destruct($this);
@@ -356,11 +365,16 @@ class Driver {
                 case StateConstant::isReconnection($state):
                     if($this->_count <= 3){
                         $this->close();
-                        usleep(500);
+                        usleep(200);
                         return $this->exec($statement, $map, $callback);
                     }
+                    $this->close();
+                    $this->_statement = null;
                     break;
                 case StateConstant::isInterrupt($state):
+                    $this->close();
+                    $this->_statement = null;
+                    break;
                 case StateConstant::isError($state):
                 default:
                     $this->_statement = null;
@@ -851,9 +865,9 @@ class Driver {
      * @param array $join
      * @param array|string $columns
      * @param array $where
-     * @return array
+     * @return array|null
      */
-    public function rand(string $table, $join = null, $columns = null, $where = null): array
+    public function rand(string $table, $join = null, $columns = null, $where = null): ?array
     {
         $orderRaw = $this->raw($this->options()->driver === 'mysql' ? 'RAND()': 'RANDOM()');
         if ($where === null) {
@@ -991,13 +1005,21 @@ class Driver {
                         $this->close();
                         usleep(500);
                         $this->transaction();
+                        return;
                     }
-                    break;
+                    throw new DatabaseConnectionException($this->_driver_message, $this->_driver_code);
                 case StateConstant::isInterrupt($state):
                     throw new DatabaseException($this->_driver_message, $this->_driver_code);
+                default:
+                    throw new TransactionException(
+                        $this->_driver_message ?? 'Transaction Exception',
+                        $this->_driver_code ?? 0
+                    );
             }
-            throw new TransactionException($this->_driver_message, $this->_driver_code);
         } finally {
+            if(is_callable(self::$onAfterTransaction)){
+                (self::$onAfterTransaction)($this);
+            }
             if($this->_logger and ($error = $this->error())){
                 $this->_logger->error('Database Begin Transaction Error.',$error);
             }
@@ -1019,6 +1041,9 @@ class Driver {
             ] = $this->_error;
             $this->close();
         } finally {
+            if(is_callable(self::$onAfterRollback)){
+                (self::$onAfterRollback)($this);
+            }
             if($this->_logger and ($error = $this->error())){
                 $this->_logger->error('Database Begin Transaction Error.',$error);
             }
@@ -1040,6 +1065,9 @@ class Driver {
             ] = $this->_error;
             $this->close();
         } finally {
+            if(is_callable(self::$onAfterCommit)){
+                (self::$onAfterCommit)($this);
+            }
             if($this->_logger){
                 if($error = $this->error()){
                     $this->_logger->error('Database Commit Transaction Error.',$this->error());

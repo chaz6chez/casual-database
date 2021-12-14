@@ -38,6 +38,9 @@
   |onBeforeBind|callable|绑定前|
   |onBeforeExec|callable|执行前|
   |onAfterExec|callable|执行后|
+  |onAfterTransaction|callable|事务后（不论成功与否）|
+  |onAfterRollback|callable|回滚后（不论成功与否）|
+  |onAfterCommit|callable|提交后（不论成功与否）|
   
 - 支持 logger  
 
