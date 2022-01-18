@@ -355,13 +355,13 @@ class Driver {
         }catch (PDOException $exception){
             exec_crash:
             $this->_count++;
-            $this->_error = isset($exception) ? $exception->errorInfo : $this->pdo()->errorInfo();
-            [
+            list(
                 $this->_sqlstate,
                 $this->_driver_code,
                 $this->_driver_message
-            ] = $this->_error;
-            switch ($state = $this->_driver->recognizer($this->_sqlstate)) {
+                ) = $this->_error = isset($exception) ? $exception->errorInfo : $this->_statement->errorInfo();
+            $state = $this->_driver->recognizer($this->_sqlstate);
+            switch (true) {
                 case StateConstant::isReconnection($state):
                     if($this->_count <= 3){
                         $this->close();
@@ -993,13 +993,13 @@ class Driver {
         }catch (PDOException $exception){
             tran_crash:
             $this->_count++;
-            $this->_error = isset($exception) ? $exception->errorInfo : $this->pdo()->errorInfo();
-            [
+            list(
                 $this->_sqlstate,
                 $this->_driver_code,
                 $this->_driver_message
-            ] = $this->_error;
-            switch ($state = $this->_driver->recognizer($this->_sqlstate)) {
+                ) = $this->_error = isset($exception) ? $exception->errorInfo : $this->pdo()->errorInfo();
+            $state = $this->_driver->recognizer($this->_sqlstate);
+            switch (true) {
                 case StateConstant::isReconnection($state):
                     if($this->_count <= 3){
                         $this->close();
