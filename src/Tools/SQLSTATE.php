@@ -194,7 +194,7 @@ final class SQLSTATE {
             self::$_CLASS_MAP[self::getSqlStateClass($sqlstate)] :
             [
                 'Undefined Error',
-                StateConstant::ERROR
+                StateConstant::RECONNECTION
             ];
     }
 
